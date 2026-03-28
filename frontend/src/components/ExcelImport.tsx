@@ -1,17 +1,20 @@
 import { useState } from 'react'
 import * as XLSX from 'xlsx'
+import { apiFetch } from '../api'
 
 const COL_MAP: Record<string, string> = {
-  'fatura no': 'fatura_no', 'fatura numarası': 'fatura_no', 'faturano': 'fatura_no',
+  'fatura no': 'fatura_no', 'fatura numarası': 'fatura_no', 'faturano': 'fatura_no', 'fatura_no': 'fatura_no',
   'marka': 'marka',
   'model': 'model',
   'yıl': 'yil', 'yil': 'yil', 'araç yılı': 'yil',
-  'müşteri': 'musteri_adi', 'müşteri adı': 'musteri_adi', 'musteri': 'musteri_adi', 'musteri adi': 'musteri_adi',
-  'dosya no': 'dosya_no', 'dosya numarası': 'dosya_no', 'dosyano': 'dosya_no',
-  'yedek parça': 'yedek_parca_net', 'yedek parça net': 'yedek_parca_net', 'yedek parca': 'yedek_parca_net', 'yedek parca net': 'yedek_parca_net',
-  'işçilik': 'iscilik_net', 'işçilik net': 'iscilik_net', 'iscilik': 'iscilik_net', 'iscilik net': 'iscilik_net',
-  'genel toplam': 'genel_toplam', 'toplam': 'genel_toplam',
-  'tarih': 'fatura_tarihi', 'fatura tarihi': 'fatura_tarihi',
+  'müşteri': 'musteri_adi', 'müşteri adı': 'musteri_adi', 'musteri': 'musteri_adi', 'musteri adi': 'musteri_adi', 'musteri_adi': 'musteri_adi',
+  'dosya no': 'dosya_no', 'dosya numarası': 'dosya_no', 'dosyano': 'dosya_no', 'dosya_no': 'dosya_no',
+  'plaka': 'plaka',
+  'yedek parça': 'yedek_parca_net', 'yedek parça net': 'yedek_parca_net', 'yedek parca': 'yedek_parca_net', 'yedek parca net': 'yedek_parca_net', 'yedek_parca_net': 'yedek_parca_net',
+  'işçilik': 'iscilik_net', 'işçilik net': 'iscilik_net', 'iscilik': 'iscilik_net', 'iscilik net': 'iscilik_net', 'iscilik_net': 'iscilik_net',
+  'genel toplam': 'genel_toplam', 'toplam': 'genel_toplam', 'genel_toplam': 'genel_toplam',
+  'tarih': 'fatura_tarihi', 'fatura tarihi': 'fatura_tarihi', 'fatura_tarihi': 'fatura_tarihi',
+  'ödenen tutar': 'odenen_tutar', 'odenen tutar': 'odenen_tutar', 'odenen_tutar': 'odenen_tutar',
 }
 
 function parseDate(val: any): string {
@@ -65,7 +68,7 @@ export default function ExcelImport({ onImport }: Props) {
         return obj
       })
 
-      const res = await fetch('/api/faturalar/bulk', {
+      const res = await apiFetch('/api/faturalar/bulk', {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(rows)
       })
       const data = await res.json()
