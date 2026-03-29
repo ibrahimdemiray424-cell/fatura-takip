@@ -38,60 +38,70 @@ interface Props {
 }
 
 export default function ExcelImport({ onImport }: Props) {
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState<'direkt' | 'havuz' | null>(null)
   const [msg, setMsg] = useState('')
 
-  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const parseRows = async (file: File) => {
+    const buf = await file.arrayBuffer()
+    const wb = XLSX.read(buf, { type: 'array', cellDates: false })
+    const ws = wb.Sheets[wb.SheetNames[0]]
+    const raw: any[][] = XLSX.utils.sheet_to_json(ws, { header: 1 })
+    if (raw.length < 2) throw new Error('Dosya boş veya başlık satırı yok.')
+    const headers: string[] = raw[0].map((h: any) => String(h || '').toLowerCase().trim())
+    const fieldMap: Record<number, string> = {}
+    headers.forEach((h, i) => { if (COL_MAP[h]) fieldMap[i] = COL_MAP[h] })
+    return raw.slice(1).filter(r => r.some(c => c !== null && c !== '')).map(r => {
+      const obj: any = {}
+      Object.entries(fieldMap).forEach(([idx, field]) => {
+        const v = r[Number(idx)]
+        if (field === 'fatura_tarihi') obj[field] = parseDate(v)
+        else if (['yedek_parca_net', 'iscilik_net', 'genel_toplam', 'yil'].includes(field)) obj[field] = Number(v) || 0
+        else obj[field] = v != null ? String(v) : ''
+      })
+      return obj
+    })
+  }
+
+  const handleFile = (mod: 'direkt' | 'havuz') => async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
-    setLoading(true)
-    setMsg('')
+    setLoading(mod); setMsg('')
     try {
-      const buf = await file.arrayBuffer()
-      const wb = XLSX.read(buf, { type: 'array', cellDates: false })
-      const ws = wb.Sheets[wb.SheetNames[0]]
-      const raw: any[][] = XLSX.utils.sheet_to_json(ws, { header: 1 })
-      if (raw.length < 2) { setMsg('Dosya boş veya başlık satırı yok.'); setLoading(false); return }
-
-      const headers: string[] = raw[0].map((h: any) => String(h || '').toLowerCase().trim())
-      const fieldMap: Record<number, string> = {}
-      headers.forEach((h, i) => { if (COL_MAP[h]) fieldMap[i] = COL_MAP[h] })
-
-      const rows = raw.slice(1).filter(r => r.some(c => c !== null && c !== '')).map(r => {
-        const obj: any = {}
-        Object.entries(fieldMap).forEach(([idx, field]) => {
-          const v = r[Number(idx)]
-          if (field === 'fatura_tarihi') obj[field] = parseDate(v)
-          else if (['yedek_parca_net', 'iscilik_net', 'genel_toplam', 'yil'].includes(field)) obj[field] = Number(v) || 0
-          else obj[field] = v != null ? String(v) : ''
-        })
-        return obj
-      })
-
-      const res = await apiFetch('/api/faturalar/bulk', {
+      const rows = await parseRows(file)
+      const endpoint = mod === 'havuz' ? '/api/faturalar/havuz/yukle' : '/api/faturalar/bulk'
+      const res = await apiFetch(endpoint, {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(rows)
       })
       const data = await res.json()
-      setMsg(`${data.inserted} fatura başarıyla aktarıldı.`)
-      onImport()
+      if (mod === 'havuz') setMsg(`${data.inserted} kayıt havuza yüklendi. Şimdi fatura numaralarını girebilirsiniz.`)
+      else { setMsg(`${data.inserted} fatura sisteme eklendi.`); onImport() }
     } catch (err) {
       setMsg('Hata: ' + (err as any).message)
     }
-    setLoading(false)
+    setLoading(null)
     e.target.value = ''
   }
 
+  const btnStyle = (color: string) => ({
+    padding: '9px 16px', background: color, border: 'none',
+    borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600, color: '#fff',
+    display: 'inline-flex', alignItems: 'center', gap: 6
+  })
+
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-      <label style={{
-        padding: '9px 18px', background: '#f1f5f9', border: '1px solid #e2e8f0',
-        borderRadius: 8, cursor: 'pointer', fontSize: 14, fontWeight: 600, color: '#374151',
-        display: 'inline-flex', alignItems: 'center', gap: 6
-      }}>
-        {loading ? 'Aktarılıyor...' : '↑ Excel / CSV İçe Aktar'}
-        <input type="file" accept=".xlsx,.xls,.csv" onChange={handleFile} style={{ display: 'none' }} disabled={loading} />
-      </label>
-      {msg && <span style={{ fontSize: 13, color: msg.startsWith('Hata') ? '#dc2626' : '#16a34a' }}>{msg}</span>}
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' as const }}>
+        <label style={btnStyle('#2563eb')}>
+          {loading === 'havuz' ? 'Yükleniyor...' : '☁ Havuza Yükle'}
+          <input type="file" accept=".xlsx,.xls,.csv" onChange={handleFile('havuz')} style={{ display: 'none' }} disabled={!!loading} />
+        </label>
+        <label style={btnStyle('#6b7280')}>
+          {loading === 'direkt' ? 'Aktarılıyor...' : '↑ Direkt Ekle'}
+          <input type="file" accept=".xlsx,.xls,.csv" onChange={handleFile('direkt')} style={{ display: 'none' }} disabled={!!loading} />
+        </label>
+        <span style={{ fontSize: 12, color: '#94a3b8' }}>Havuza Yükle → fatura no girerek seç | Direkt Ekle → hepsini ekle</span>
+      </div>
+      {msg && <div style={{ marginTop: 8, fontSize: 13, color: msg.startsWith('Hata') ? '#dc2626' : '#16a34a' }}>{msg}</div>}
     </div>
   )
 }

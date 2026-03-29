@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import FaturaForm from '../components/FaturaForm'
 import ExcelImport from '../components/ExcelImport'
+import HavuzEkle from '../components/HavuzEkle'
 import { apiFetch } from '../api'
 
 const MARKALAR = ['OPEL', 'PEUGEOT', 'HYUNDAİ', 'DİĞER']
@@ -70,6 +71,7 @@ export default function Faturalar() {
         </h2>
         <div style={{ display: 'flex', gap: 10 }}>
           <ExcelImport onImport={load} />
+          <HavuzEkle onEklendi={load} />
           <button onClick={() => { setEditRow(null); setShowForm(true) }}
             style={{ padding: '9px 20px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 14, fontWeight: 600 }}>
             + Yeni Fatura

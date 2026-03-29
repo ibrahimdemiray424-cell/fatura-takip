@@ -71,6 +71,73 @@ router.post('/bulk', (req, res) => {
   res.json({ inserted: rows.length });
 });
 
+// HAVUZ endpoint'leri
+router.post('/havuz/yukle', (req, res) => {
+  const rows = req.body;
+  if (!Array.isArray(rows)) return res.status(400).json({ error: 'Array bekleniyor' });
+  const stmt = db.prepare(`
+    INSERT INTO fatura_havuzu (fatura_no, marka, plaka, yil, musteri_adi, dosya_no,
+      yedek_parca_net, iscilik_net, genel_toplam, fatura_tarihi)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `);
+  const insertMany = db.transaction((items) => {
+    for (const f of items) {
+      stmt.run(f.fatura_no, f.marka, f.plaka || null, f.yil, f.musteri_adi, f.dosya_no,
+        f.yedek_parca_net || 0, f.iscilik_net || 0, f.genel_toplam || 0, f.fatura_tarihi);
+    }
+  });
+  insertMany(rows);
+  res.json({ inserted: rows.length });
+});
+
+router.get('/havuz/ara', (req, res) => {
+  const q = req.query.q || '';
+  const rows = db.prepare(`SELECT * FROM fatura_havuzu WHERE UPPER(fatura_no) LIKE UPPER(?) LIMIT 10`).all(`%${q}%`);
+  res.json(rows);
+});
+
+router.post('/havuz/ekle', (req, res) => {
+  const { faturaNo } = req.body;
+  if (!faturaNo) return res.status(400).json({ error: 'faturaNo gerekli' });
+  const kayit = db.prepare(`SELECT * FROM fatura_havuzu WHERE UPPER(fatura_no) = UPPER(?)`).get(faturaNo);
+  if (!kayit) return res.status(404).json({ error: `"${faturaNo}" havuzda bulunamadı` });
+  const stmt = db.prepare(`
+    INSERT INTO faturalar (fatura_no, marka, plaka, yil, musteri_adi, dosya_no,
+      yedek_parca_net, iscilik_net, genel_toplam, fatura_tarihi, odeme_durumu, odenen_tutar)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'bekliyor', 0)
+  `);
+  const result = stmt.run(kayit.fatura_no, kayit.marka, kayit.plaka, kayit.yil,
+    kayit.musteri_adi, kayit.dosya_no, kayit.yedek_parca_net, kayit.iscilik_net,
+    kayit.genel_toplam, kayit.fatura_tarihi);
+  const row = db.prepare('SELECT * FROM faturalar WHERE id = ?').get(result.lastInsertRowid);
+  res.json({ success: true, fatura: row });
+});
+
+router.post('/havuz/toplu-ekle', (req, res) => {
+  const { faturaNoList } = req.body;
+  if (!Array.isArray(faturaNoList)) return res.status(400).json({ error: 'faturaNoList array bekleniyor' });
+  const eklendi = [], bulunamadi = [];
+  const stmt = db.prepare(`
+    INSERT INTO faturalar (fatura_no, marka, plaka, yil, musteri_adi, dosya_no,
+      yedek_parca_net, iscilik_net, genel_toplam, fatura_tarihi, odeme_durumu, odenen_tutar)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'bekliyor', 0)
+  `);
+  const ekle = db.transaction((list) => {
+    for (const no of list) {
+      const trimmed = no.trim();
+      if (!trimmed) continue;
+      const kayit = db.prepare(`SELECT * FROM fatura_havuzu WHERE UPPER(fatura_no) = UPPER(?)`).get(trimmed);
+      if (!kayit) { bulunamadi.push(trimmed); continue; }
+      stmt.run(kayit.fatura_no, kayit.marka, kayit.plaka, kayit.yil,
+        kayit.musteri_adi, kayit.dosya_no, kayit.yedek_parca_net, kayit.iscilik_net,
+        kayit.genel_toplam, kayit.fatura_tarihi);
+      eklendi.push(trimmed);
+    }
+  });
+  ekle(faturaNoList);
+  res.json({ eklendi: eklendi.length, bulunamadi });
+});
+
 router.put('/:id', (req, res) => {
   const f = req.body;
   const odenenTutar = Number(f.odenen_tutar) || 0;
