@@ -31,7 +31,7 @@ export default function EkspertizForm(){
     const data=await res.json()
     if(!res.ok){alert(data.error||"Hata");setLoad(false);return}
     if(sonraki) await apiFetch(`/api/ekspertiz/${data.id}/durum`,{method:"PATCH",body:JSON.stringify({durum:sonraki})})
-    setLoad(false); nav(`/${data.id}`)
+    setLoad(false); nav(`/ekspertiz/${data.id}`)
   }
   const pT=parcalar.reduce((a,p)=>a+(Number(p.fiyat)||0),0)
   const iT=iscilikleri.reduce((a,i)=>a+(Number(i.tutar)||0),0)
