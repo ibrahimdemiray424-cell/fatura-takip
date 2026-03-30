@@ -151,7 +151,7 @@ export default function EkspertizDetay() {
       {/* Üst bar */}
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:18}}>
         <div style={{display:"flex",alignItems:"center",gap:12}}>
-          <button onClick={()=>nav("/")} style={{background:"none",border:"1px solid #cbd5e1",borderRadius:8,padding:"6px 14px",cursor:"pointer",fontSize:13}}>← Geri</button>
+          <button onClick={()=>nav("/ekspertiz")} style={{background:"none",border:"1px solid #cbd5e1",borderRadius:8,padding:"6px 14px",cursor:"pointer",fontSize:13}}>← Geri</button>
           <div>
             <div style={{display:"flex",alignItems:"center",gap:10}}>
               <h1 style={{margin:0,fontSize:20,fontWeight:700,color:"#1e293b"}}>{dosya.rapor_no}</h1>
@@ -161,7 +161,7 @@ export default function EkspertizDetay() {
           </div>
         </div>
         <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-          {dosya.durum!=="tamamlandi"&&<button onClick={()=>nav(`/${id}/duzenle`)} style={{padding:"8px 16px",background:"#f1f5f9",border:"1px solid #cbd5e1",borderRadius:8,cursor:"pointer",fontSize:13,fontWeight:600}}>Düzenle</button>}
+          {dosya.durum!=="tamamlandi"&&<button onClick={()=>nav(`/ekspertiz/${id}/duzenle`)} style={{padding:"8px 16px",background:"#f1f5f9",border:"1px solid #cbd5e1",borderRadius:8,cursor:"pointer",fontSize:13,fontWeight:600}}>Düzenle</button>}
           <a href={`/api/ekspertiz/${id}/excel`} target="_blank" style={{padding:"8px 16px",background:"#166534",color:"#fff",borderRadius:8,fontSize:13,fontWeight:600,textDecoration:"none",display:"inline-block"}}>Excel</a>
           <a href={`/api/ekspertiz/${id}/pdf`}   target="_blank" style={{padding:"8px 16px",background:"#7c3aed",color:"#fff",borderRadius:8,fontSize:13,fontWeight:600,textDecoration:"none",display:"inline-block"}}>PDF</a>
           {(SONRAKI[dosya.durum]||[]).map((g:any)=>(
