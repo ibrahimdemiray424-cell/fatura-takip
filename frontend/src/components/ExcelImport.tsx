@@ -6,15 +6,23 @@ const COL_MAP: Record<string, string> = {
   'fatura no': 'fatura_no', 'fatura numarası': 'fatura_no', 'faturano': 'fatura_no', 'fatura_no': 'fatura_no',
   'marka': 'marka',
   'model': 'model',
-  'yıl': 'yil', 'yil': 'yil', 'araç yılı': 'yil',
+  'yıl': 'yil', 'yil': 'yil', 'araç yılı': 'yil', 'model yılı': 'yil',
   'müşteri': 'musteri_adi', 'müşteri adı': 'musteri_adi', 'musteri': 'musteri_adi', 'musteri adi': 'musteri_adi', 'musteri_adi': 'musteri_adi',
+  'finansal müşteri': 'musteri_adi',
   'dosya no': 'dosya_no', 'dosya numarası': 'dosya_no', 'dosyano': 'dosya_no', 'dosya_no': 'dosya_no',
+  'sigorta dosya no': 'dosya_no',
   'plaka': 'plaka',
   'yedek parça': 'yedek_parca_net', 'yedek parça net': 'yedek_parca_net', 'yedek parca': 'yedek_parca_net', 'yedek parca net': 'yedek_parca_net', 'yedek_parca_net': 'yedek_parca_net',
+  'y.parça tutarı': '__yp_brut', 'y.parca tutarı': '__yp_brut',
   'işçilik': 'iscilik_net', 'işçilik net': 'iscilik_net', 'iscilik': 'iscilik_net', 'iscilik net': 'iscilik_net', 'iscilik_net': 'iscilik_net',
+  'i̇şçilik tutarı': '__isc_brut', 'işçilik tutarı': '__isc_brut',
+  'işçilik i̇sk.tut': '__isc_isk', 'işçilik isk.tut': '__isc_isk', 'i̇şçilik i̇sk.tut': '__isc_isk',
+  'y.parça i̇sk.tut': '__yp_isk', 'y.parça isk.tut': '__yp_isk', 'y.parca isk.tut': '__yp_isk',
   'genel toplam': 'genel_toplam', 'toplam': 'genel_toplam', 'genel_toplam': 'genel_toplam',
-  'tarih': 'fatura_tarihi', 'fatura tarihi': 'fatura_tarihi', 'fatura_tarihi': 'fatura_tarihi',
+  'tarih': 'fatura_tarihi', 'fatura tarihi': 'fatura_tarihi', 'fatura_tarihi': 'fatura_tarihi', 'fat.tarihi': 'fatura_tarihi',
   'ödenen tutar': 'odenen_tutar', 'odenen tutar': 'odenen_tutar', 'odenen_tutar': 'odenen_tutar',
+  'kasko': 'sigorta_sirketi',
+  'sigorta': 'sigorta_sirketi',
 }
 
 function parseDate(val: any): string {
@@ -50,15 +58,27 @@ export default function ExcelImport({ onImport }: Props) {
     const headers: string[] = raw[0].map((h: any) => String(h || '').toLowerCase().trim())
     const fieldMap: Record<number, string> = {}
     headers.forEach((h, i) => { if (COL_MAP[h]) fieldMap[i] = COL_MAP[h] })
+
     return raw.slice(1).filter(r => r.some(c => c !== null && c !== '')).map(r => {
-      const obj: any = {}
+      const raw_obj: any = {}
       Object.entries(fieldMap).forEach(([idx, field]) => {
         const v = r[Number(idx)]
-        if (field === 'fatura_tarihi') obj[field] = parseDate(v)
-        else if (['yedek_parca_net', 'iscilik_net', 'genel_toplam', 'yil'].includes(field)) obj[field] = Number(v) || 0
-        else obj[field] = v != null ? String(v) : ''
+        if (field === 'fatura_tarihi') raw_obj[field] = parseDate(v)
+        else if (['yedek_parca_net', 'iscilik_net', 'genel_toplam', 'yil',
+                  '__yp_brut', '__yp_isk', '__isc_brut', '__isc_isk'].includes(field))
+          raw_obj[field] = Number(v) || 0
+        else raw_obj[field] = v != null ? String(v) : ''
       })
-      return obj
+      // Efes Pro: net tutarları hesapla (brüt - iskonto)
+      if ('__isc_brut' in raw_obj) raw_obj.iscilik_net = (raw_obj.__isc_brut || 0) - (raw_obj.__isc_isk || 0)
+      if ('__yp_brut' in raw_obj) raw_obj.yedek_parca_net = (raw_obj.__yp_brut || 0) - (raw_obj.__yp_isk || 0)
+      // genel_toplam yoksa yedek parça + işçilik
+      if (!raw_obj.genel_toplam && (raw_obj.yedek_parca_net || raw_obj.iscilik_net))
+        raw_obj.genel_toplam = (raw_obj.yedek_parca_net || 0) + (raw_obj.iscilik_net || 0)
+      // ara alanları temizle
+      delete raw_obj.__yp_brut; delete raw_obj.__yp_isk
+      delete raw_obj.__isc_brut; delete raw_obj.__isc_isk
+      return raw_obj
     })
   }
 

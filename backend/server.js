@@ -12,6 +12,7 @@ app.use(express.json({ limit: '10mb' }));
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/faturalar', authMiddleware, require('./routes/faturalar'));
 app.use('/api/raporlar', authMiddleware, require('./routes/raporlar'));
+app.use('/api/ekspertiz', authMiddleware, require('./routes/ekspertiz'));
 
 const distPath = path.join(__dirname, '..', 'frontend', 'dist');
 app.use(express.static(distPath));

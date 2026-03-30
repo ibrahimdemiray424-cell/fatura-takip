@@ -3,6 +3,9 @@ import { BrowserRouter, Routes, Route, NavLink } from 'react-router-dom'
 import Dashboard from './pages/Dashboard'
 import Faturalar from './pages/Faturalar'
 import OdemeTakibi from './pages/OdemeTakibi'
+import Ekspertiz from './pages/Ekspertiz'
+import EkspertizForm from './pages/EkspertizForm'
+import EkspertizDetay from './pages/EkspertizDetay'
 import Login from './pages/Login'
 import { getToken, clearToken, getUsername } from './api'
 
@@ -26,6 +29,7 @@ function App() {
               { to: '/', label: 'Dashboard', icon: '▦' },
               { to: '/faturalar', label: 'Faturalar', icon: '≡' },
               { to: '/odeme-takibi', label: 'Ödeme Takibi', icon: '₺' },
+              { to: '/ekspertiz', label: 'Ön Ekspertiz', icon: '⚙' },
             ].map(item => (
               <NavLink key={item.to} to={item.to} end={item.to === '/'}
                 style={({ isActive }) => ({
@@ -52,6 +56,10 @@ function App() {
             <Route path="/" element={<Dashboard />} />
             <Route path="/faturalar" element={<Faturalar />} />
             <Route path="/odeme-takibi" element={<OdemeTakibi />} />
+            <Route path="/ekspertiz" element={<Ekspertiz />} />
+            <Route path="/ekspertiz/yeni" element={<EkspertizForm />} />
+            <Route path="/ekspertiz/:id" element={<EkspertizDetay />} />
+            <Route path="/ekspertiz/:id/duzenle" element={<EkspertizForm />} />
           </Routes>
         </main>
       </div>

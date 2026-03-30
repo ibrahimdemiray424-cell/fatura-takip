@@ -115,4 +115,19 @@ router.get('/ciro-trendi', (req, res) => {
   res.json(rows);
 });
 
+router.get('/sigorta-ozet', (req, res) => {
+  const yil = req.query.yil || new Date().getFullYear();
+  const { where, params } = donemFilter(yil, req.query.ay);
+  const rows = db.prepare(`
+    SELECT COALESCE(sigorta_sirketi, 'Belirtilmemiş') as sigorta_sirketi,
+      COUNT(*) as adet,
+      COALESCE(SUM(yedek_parca_net),0) as yedek_parca,
+      COALESCE(SUM(iscilik_net),0) as iscilik,
+      COALESCE(SUM(genel_toplam),0) as toplam
+    FROM faturalar WHERE ${where}
+    GROUP BY sigorta_sirketi ORDER BY toplam DESC
+  `).all(...params);
+  res.json(rows);
+});
+
 module.exports = router;

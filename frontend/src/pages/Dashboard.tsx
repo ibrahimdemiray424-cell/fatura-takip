@@ -7,6 +7,7 @@ import CiroGrafik from '../components/CiroGrafik'
 import MarkaTutarGrafik from '../components/MarkaTutarGrafik'
 import AylikMarkaTutarGrafik from '../components/AylikMarkaTutarGrafik'
 import MarkaOzetTablosu from '../components/MarkaOzetTablosu'
+import SigortaDashboard from '../components/SigortaDashboard'
 import { apiFetch } from '../api'
 
 const AYLAR = [
@@ -154,6 +155,15 @@ export default function Dashboard() {
             </table>
           </div>
         )}
+      </div>
+
+      {/* Sigorta Şirketi Dashboard */}
+      <div style={{ marginBottom: 20 }}>
+        <h3 style={{ margin: '0 0 14px', fontSize: 15, fontWeight: 700, color: '#0f172a' }}>
+          Sigorta Şirketi Bazında Özet
+          <span style={{ marginLeft: 10, fontSize: 13, fontWeight: 400, color: '#64748b' }}>{donemLabel}</span>
+        </h3>
+        <SigortaDashboard yil={yil} ay={ay ? Number(ay) : null} />
       </div>
     </div>
   )
