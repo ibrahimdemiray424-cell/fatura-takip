@@ -28,6 +28,11 @@ db.exec(`
 try { db.exec("ALTER TABLE faturalar ADD COLUMN plaka TEXT"); } catch(e) {}
 try { db.exec("ALTER TABLE faturalar DROP COLUMN model"); } catch(e) {}
 try { db.exec("ALTER TABLE faturalar ADD COLUMN sigorta_sirketi TEXT"); } catch(e) {}
+try { db.exec("ALTER TABLE faturalar ADD COLUMN acente_ismi TEXT"); } catch(e) {}
+try { db.exec("ALTER TABLE faturalar ADD COLUMN dosya_durumu TEXT"); } catch(e) {}
+try { db.exec("ALTER TABLE faturalar ADD COLUMN danisman TEXT"); } catch(e) {}
+try { db.exec("ALTER TABLE fatura_havuzu ADD COLUMN sigorta_sirketi TEXT"); } catch(e) {}
+try { db.exec("ALTER TABLE fatura_havuzu ADD COLUMN danisman TEXT"); } catch(e) {}
 
 db.exec(`
   CREATE TABLE IF NOT EXISTS fatura_havuzu (
@@ -39,6 +44,7 @@ db.exec(`
     musteri_adi TEXT,
     dosya_no TEXT,
     sigorta_sirketi TEXT,
+    danisman TEXT,
     yedek_parca_net REAL DEFAULT 0,
     iscilik_net REAL DEFAULT 0,
     genel_toplam REAL DEFAULT 0,
@@ -47,6 +53,7 @@ db.exec(`
   )
 `);
 try { db.exec("ALTER TABLE fatura_havuzu ADD COLUMN sigorta_sirketi TEXT"); } catch(e) {}
+try { db.exec("ALTER TABLE fatura_havuzu ADD COLUMN danisman TEXT"); } catch(e) {}
 
 // ── Ekspertiz tabloları ──────────────────────────────────────────────────────
 db.exec(`

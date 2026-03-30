@@ -115,14 +115,14 @@ export default function Faturalar() {
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
             <thead>
               <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
-                {['Fatura No','Tarih','Marka','Plaka','Müşteri','Dosya No','Yedek Parça','İşçilik','Genel Toplam','Durum','İşlem'].map(h => (
+                {['Fatura No','Tarih','Marka','Plaka','Yıl','Müşteri','Dosya No','Sigorta Şirketi','Danışman','Acente','Dosya Dur.','Yedek Parça','İşçilik','Genel Toplam','Durum','İşlem'].map(h => (
                   <th key={h} style={{ padding: '12px 14px', textAlign: 'left', fontWeight: 600, color: '#374151', whiteSpace: 'nowrap' }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {paged.length === 0 && (
-                <tr><td colSpan={11} style={{ padding: 40, textAlign: 'center', color: '#94a3b8' }}>Kayıt bulunamadı</td></tr>
+                <tr><td colSpan={16} style={{ padding: 40, textAlign: 'center', color: '#94a3b8' }}>Kayıt bulunamadı</td></tr>
               )}
               {paged.map((r, i) => (
                 <tr key={r.id} style={{ borderBottom: '1px solid #f1f5f9', background: i % 2 === 0 ? '#fff' : '#fafafa' }}>
@@ -130,8 +130,17 @@ export default function Faturalar() {
                   <td style={td}>{r.fatura_tarihi || '-'}</td>
                   <td style={td}><strong>{r.marka || '-'}</strong></td>
                   <td style={td}>{r.plaka || '-'}</td>
+                  <td style={td}>{r.yil || '-'}</td>
                   <td style={td}>{r.musteri_adi || '-'}</td>
                   <td style={td}>{r.dosya_no || '-'}</td>
+                  <td style={td}>{r.sigorta_sirketi || '-'}</td>
+                  <td style={td}>{r.danisman || '-'}</td>
+                  <td style={td}>
+                    {r.acente_ismi ? <span style={{ background: '#dbeafe', color: '#1d4ed8', padding: '2px 8px', borderRadius: 99, fontSize: 11, fontWeight: 600 }}>{r.acente_ismi}</span> : '-'}
+                  </td>
+                  <td style={td}>
+                    {r.dosya_durumu ? <span style={{ background: '#dcfce7', color: '#16a34a', padding: '2px 8px', borderRadius: 99, fontSize: 11, fontWeight: 600 }}>{r.dosya_durumu}</span> : '-'}
+                  </td>
                   <td style={{ ...td, textAlign: 'right' }}>{fmt(r.yedek_parca_net)}</td>
                   <td style={{ ...td, textAlign: 'right' }}>{fmt(r.iscilik_net)}</td>
                   <td style={{ ...td, textAlign: 'right', fontWeight: 600 }}>{fmt(r.genel_toplam)}</td>

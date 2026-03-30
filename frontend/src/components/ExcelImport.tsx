@@ -23,6 +23,7 @@ const COL_MAP: Record<string, string> = {
   'ödenen tutar': 'odenen_tutar', 'odenen tutar': 'odenen_tutar', 'odenen_tutar': 'odenen_tutar',
   'kasko': 'sigorta_sirketi',
   'sigorta': 'sigorta_sirketi',
+  'i̇şemri sorumlusu': 'danisman', 'işemri sorumlusu': 'danisman', 'danışman': 'danisman', 'danisman': 'danisman',
 }
 
 function parseDate(val: any): string {

@@ -8,6 +8,7 @@ import MarkaTutarGrafik from '../components/MarkaTutarGrafik'
 import AylikMarkaTutarGrafik from '../components/AylikMarkaTutarGrafik'
 import MarkaOzetTablosu from '../components/MarkaOzetTablosu'
 import SigortaDashboard from '../components/SigortaDashboard'
+import DanismanOzet from '../components/DanismanOzet'
 import { apiFetch } from '../api'
 
 const AYLAR = [
@@ -164,6 +165,15 @@ export default function Dashboard() {
           <span style={{ marginLeft: 10, fontSize: 13, fontWeight: 400, color: '#64748b' }}>{donemLabel}</span>
         </h3>
         <SigortaDashboard yil={yil} ay={ay ? Number(ay) : null} />
+      </div>
+
+      {/* Danışman Dashboard */}
+      <div style={{ marginBottom: 20 }}>
+        <h3 style={{ margin: '0 0 14px', fontSize: 15, fontWeight: 700, color: '#0f172a' }}>
+          Danışman Bazında Özet
+          <span style={{ marginLeft: 10, fontSize: 13, fontWeight: 400, color: '#64748b' }}>{donemLabel}</span>
+        </h3>
+        <DanismanOzet yil={yil} ay={ay ? Number(ay) : null} />
       </div>
     </div>
   )
